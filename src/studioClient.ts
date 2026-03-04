@@ -68,6 +68,14 @@ export function getStudioConfig(): {
   return { baseUrl, port };
 }
 
+export function getFrontendUrl(): string {
+  const cfg = vscode.workspace.getConfiguration("sageAgent");
+  const host = cfg.get<string>("studio.host", "localhost");
+  const tls = cfg.get<boolean>("studio.tls", false);
+  const frontendPort = getCachedPorts().STUDIO_FRONTEND;
+  return `${tls ? "https" : "http"}://${host}:${frontendPort}`;
+}
+
 // ── Low-level HTTP helper ──────────────────────────────────────────────────────
 
 function rawRequest(

@@ -12,7 +12,7 @@ import * as cp from "child_process";
 import * as vscode from "vscode";
 import { AgentPanel } from "./agentPanel";
 import { ChatPanel } from "./chatPanel";
-import { StudioConnectionError, checkHealth, getStudioConfig } from "./studioClient";
+import { StudioConnectionError, checkHealth, getStudioConfig, getFrontendUrl } from "./studioClient";
 import { StatusBarManager } from "./statusBar";
 import { resolveSagePorts } from "./sagePortsResolver";
 
@@ -62,6 +62,29 @@ export async function activate(
     // ── Stop studio ────────────────────────────────────────────────────────────
     vscode.commands.registerCommand("sageAgent.stopStudio", () => {
       stopStudio(statusBar!);
+    }),
+
+    // ── Open Studio (status-bar click) ─────────────────────────────────────────
+    vscode.commands.registerCommand("sageAgent.openStudio", async () => {
+      statusBar?.setConnecting();
+      const healthy = await checkHealth();
+      statusBar?.setStudioStatus(healthy);
+      if (healthy) {
+        const frontendUrl = getFrontendUrl();
+        vscode.env.openExternal(vscode.Uri.parse(frontendUrl));
+      } else {
+        const { baseUrl } = getStudioConfig();
+        const action = await vscode.window.showWarningMessage(
+          `SAGE Studio 未运行 (${baseUrl})`,
+          "启动 Studio",
+          "安装指引"
+        );
+        if (action === "启动 Studio") {
+          startStudio(statusBar!);
+        } else if (action === "安装指引") {
+          vscode.commands.executeCommand("sageAgent.showInstallGuide");
+        }
+      }
     }),
 
     // ── Check connection ───────────────────────────────────────────────────────

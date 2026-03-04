@@ -10,7 +10,7 @@ export class StatusBarManager implements vscode.Disposable {
       vscode.StatusBarAlignment.Right,
       100
     );
-    this.item.command = "sageAgent.checkConnection";
+    this.item.command = "sageAgent.openStudio";
     this.setUnknown();
     this.item.show();
   }
@@ -27,7 +27,7 @@ export class StatusBarManager implements vscode.Disposable {
     const { baseUrl } = getStudioConfig();
     if (online) {
       this.item.text = "$(pass-filled) SAGE Studio";
-      this.item.tooltip = `sage-studio connected at ${baseUrl}`;
+      this.item.tooltip = `sage-studio 已就绪 — 点击在浏览器中打开`;
       this.item.backgroundColor = undefined;
     } else {
       this.item.text = "$(error) SAGE Studio";
