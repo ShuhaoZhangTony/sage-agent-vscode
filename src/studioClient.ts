@@ -15,6 +15,7 @@
 import * as http from "http";
 import * as https from "https";
 import * as vscode from "vscode";
+import { getCachedPorts } from "./sagePortsResolver";
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
@@ -55,13 +56,16 @@ export class StudioConnectionError extends Error {
 
 export function getStudioConfig(): {
   baseUrl: string;
+  port: number;
 } {
   const cfg = vscode.workspace.getConfiguration("sageAgent");
   const host = cfg.get<string>("studio.host", "localhost");
-  const port = cfg.get<number>("studio.port", 8765);
   const tls = cfg.get<boolean>("studio.tls", false);
+  // 0 means "auto-detect from SagePorts" — resolved at activation via resolveSagePorts()
+  const cfgPort = cfg.get<number>("studio.port", 0);
+  const port = cfgPort > 0 ? cfgPort : getCachedPorts().STUDIO_BACKEND;
   const baseUrl = `${tls ? "https" : "http"}://${host}:${port}`;
-  return { baseUrl };
+  return { baseUrl, port };
 }
 
 // ── Low-level HTTP helper ──────────────────────────────────────────────────────

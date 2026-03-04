@@ -138,8 +138,8 @@
         },
         "sageAgent.studio.port": {
           "type": "number",
-          "default": 8765,
-          "description": "sage-studio backend port (default: 8765)"
+          "default": 0,
+          "description": "sage-studio backend port. Set to 0 (default) to auto-detect from SagePorts.STUDIO_BACKEND at activation time."
         },
         "sageAgent.studio.tls": {
           "type": "boolean",
@@ -150,6 +150,11 @@
           "type": "string",
           "default": "You are a helpful AI assistant integrated into VS Code via SAGE Studio.",
           "description": "System prompt for the chat panel"
+        },
+        "sageAgent.studio.autoStart": {
+          "type": "boolean",
+          "default": true,
+          "description": "Automatically start sage-studio when the extension activates and the backend is not reachable."
         },
         "sageAgent.studio.startCommand": {
           "type": "string",

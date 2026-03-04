@@ -14,6 +14,7 @@ import { AgentPanel } from "./agentPanel";
 import { ChatPanel } from "./chatPanel";
 import { StudioConnectionError, checkHealth, getStudioConfig } from "./studioClient";
 import { StatusBarManager } from "./statusBar";
+import { resolveSagePorts } from "./sagePortsResolver";
 
 let studioProcess: cp.ChildProcess | null = null;
 let statusBar: StatusBarManager | null = null;
@@ -24,6 +25,9 @@ let healthCheckInterval: ReturnType<typeof setInterval> | null = null;
 export async function activate(
   context: vscode.ExtensionContext
 ): Promise<void> {
+  // Resolve SagePorts from Python env — must happen before any port usage
+  await resolveSagePorts();
+
   // Status bar
   statusBar = new StatusBarManager();
   context.subscriptions.push(statusBar);
@@ -88,8 +92,21 @@ export async function activate(
     })
   );
 
-  // Initial health check
-  void statusBar.refresh();
+  // Initial health check → auto-start if configured and not reachable
+  statusBar.setConnecting();
+  const initiallyHealthy = await checkHealth();
+  statusBar.setStudioStatus(initiallyHealthy);
+
+  if (!initiallyHealthy) {
+    const cfg = vscode.workspace.getConfiguration("sageAgent");
+    const autoStart = cfg.get<boolean>("studio.autoStart", true);
+    if (autoStart) {
+      vscode.window.showInformationMessage(
+        "SAGE Studio not running — starting automatically…"
+      );
+      startStudio(statusBar);
+    }
+  }
 
   // Periodic health refresh every 30 s
   healthCheckInterval = setInterval(async () => {
