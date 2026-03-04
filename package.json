@@ -1,0 +1,193 @@
+{
+  "name": "sage-agent-vscode",
+  "displayName": "SAGE Studio Agent",
+  "description": "SAGE Studio Agent integration for VS Code — chat and multi-agent task execution via sage-studio backend",
+  "version": "0.1.0",
+  "publisher": "intellistream",
+  "license": "MIT",
+  "icon": "media/icon.png",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/intellistream/sage-agent-vscode"
+  },
+  "bugs": {
+    "url": "https://github.com/intellistream/sage-agent-vscode/issues"
+  },
+  "homepage": "https://github.com/intellistream/sage-agent-vscode#readme",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "AI",
+    "Chat",
+    "Machine Learning",
+    "Other"
+  ],
+  "keywords": [
+    "sage",
+    "sage-studio",
+    "agent",
+    "llm",
+    "ai",
+    "chat",
+    "intellistream"
+  ],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "sageAgent.openChat",
+        "title": "SAGE Agent: Open Chat",
+        "icon": "$(comment-discussion)"
+      },
+      {
+        "command": "sageAgent.openAgentPanel",
+        "title": "SAGE Agent: Open Agent Task Panel",
+        "icon": "$(robot)"
+      },
+      {
+        "command": "sageAgent.startStudio",
+        "title": "SAGE Agent: Start Studio Backend",
+        "icon": "$(play)"
+      },
+      {
+        "command": "sageAgent.stopStudio",
+        "title": "SAGE Agent: Stop Studio Backend",
+        "icon": "$(stop)"
+      },
+      {
+        "command": "sageAgent.checkConnection",
+        "title": "SAGE Agent: Check Connection",
+        "icon": "$(plug)"
+      },
+      {
+        "command": "sageAgent.showInstallGuide",
+        "title": "SAGE Agent: Installation Guide",
+        "icon": "$(book)"
+      }
+    ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "sage-agent-sidebar",
+          "title": "SAGE Studio Agent",
+          "icon": "$(robot)"
+        }
+      ]
+    },
+    "views": {
+      "sage-agent-sidebar": [
+        {
+          "type": "webview",
+          "id": "sageAgent.chatView",
+          "name": "Chat",
+          "icon": "$(comment-discussion)"
+        },
+        {
+          "type": "webview",
+          "id": "sageAgent.agentView",
+          "name": "Agent Tasks",
+          "icon": "$(robot)"
+        }
+      ]
+    },
+    "menus": {
+      "editor/context": [
+        {
+          "command": "sageAgent.openChat",
+          "when": "editorHasSelection",
+          "group": "sageAgent@1"
+        },
+        {
+          "command": "sageAgent.openAgentPanel",
+          "when": "editorHasSelection",
+          "group": "sageAgent@2"
+        }
+      ],
+      "commandPalette": [
+        {
+          "command": "sageAgent.openChat"
+        },
+        {
+          "command": "sageAgent.openAgentPanel"
+        },
+        {
+          "command": "sageAgent.startStudio"
+        },
+        {
+          "command": "sageAgent.stopStudio"
+        },
+        {
+          "command": "sageAgent.checkConnection"
+        },
+        {
+          "command": "sageAgent.showInstallGuide"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "SAGE Studio Agent",
+      "properties": {
+        "sageAgent.studio.host": {
+          "type": "string",
+          "default": "localhost",
+          "description": "sage-studio backend host"
+        },
+        "sageAgent.studio.port": {
+          "type": "number",
+          "default": 8765,
+          "description": "sage-studio backend port (default: 8765)"
+        },
+        "sageAgent.studio.tls": {
+          "type": "boolean",
+          "default": false,
+          "description": "Use TLS (https) when connecting to sage-studio"
+        },
+        "sageAgent.chat.systemPrompt": {
+          "type": "string",
+          "default": "You are a helpful AI assistant integrated into VS Code via SAGE Studio.",
+          "description": "System prompt for the chat panel"
+        },
+        "sageAgent.studio.startCommand": {
+          "type": "string",
+          "default": "sage studio start",
+          "description": "Shell command to start the sage-studio backend"
+        },
+        "sageAgent.studio.stopCommand": {
+          "type": "string",
+          "default": "sage studio stop",
+          "description": "Shell command to stop the sage-studio backend"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run package",
+    "compile": "npm run check-types && npm run lint && node esbuild.js",
+    "watch": "npm-run-all -p watch:*",
+    "watch:esbuild": "node esbuild.js --watch",
+    "watch:tsc": "tsc --noEmit --watch --project tsconfig.json",
+    "package": "npm run check-types && npm run lint && node esbuild.js --production",
+    "compile-tests": "tsc -p . --outDir out",
+    "watch-tests": "tsc -p . -w --outDir out",
+    "pretest": "npm run compile-tests && npm run compile && npm run lint",
+    "check-types": "tsc --noEmit",
+    "lint": "eslint \"src/**/*.ts\"",
+    "test": "vscode-test"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.85.0",
+    "@types/node": "20.x",
+    "@typescript-eslint/eslint-plugin": "^7.0.0",
+    "@typescript-eslint/parser": "^7.0.0",
+    "@vscode/test-cli": "^0.0.9",
+    "@vscode/test-electron": "^2.3.9",
+    "esbuild": "^0.21.0",
+    "eslint": "^8.57.0",
+    "npm-run-all": "^4.1.5",
+    "typescript": "^5.4.0"
+  }
+}
