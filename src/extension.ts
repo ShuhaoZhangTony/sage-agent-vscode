@@ -162,50 +162,39 @@ function startStudio(bar: StatusBarManager | null): void {
   }
 
   const cfg = vscode.workspace.getConfiguration("sageAgent");
-  const startCmd = cfg.get<string>("studio.startCommand", "sage studio start");
+  const startCmd = cfg.get<string>("studio.startCommand", "sage studio start --yes");
 
+  // Run in a visible terminal — sage studio start is interactive and needs a TTY
   const terminal = vscode.window.createTerminal({
     name: "SAGE Studio",
     isTransient: true,
   });
-
-  // Also spawn a background process for tracking
-  studioProcess = cp.spawn("sh", ["-c", startCmd], {
-    detached: false,
-    stdio: "ignore",
-  });
-
-  studioProcess.on("exit", (code) => {
-    studioProcess = null;
-    bar?.setStudioStatus(false);
-    if (code !== 0 && code !== null) {
-      vscode.window.showWarningMessage(
-        `SAGE Studio exited with code ${code}.`
-      );
-    }
-  });
-
   terminal.sendText(startCmd);
   terminal.show(true);
 
+  // Mark a sentinel so we know a start was requested
+  studioProcess = { killed: false } as unknown as cp.ChildProcess;
+
   bar?.setConnecting();
 
-  // Poll until the studio is ready (up to 60 s)
+  // Poll until the studio backend is reachable (up to 90 s)
   let attempts = 0;
   const poll = setInterval(async () => {
     attempts++;
     const healthy = await checkHealth();
     if (healthy) {
       clearInterval(poll);
+      studioProcess = null;
       bar?.setStudioStatus(true);
       vscode.window.showInformationMessage(
         "SAGE Studio started and ready ✓"
       );
-    } else if (attempts >= 60) {
+    } else if (attempts >= 90) {
       clearInterval(poll);
+      studioProcess = null;
       bar?.setStudioStatus(false);
       vscode.window.showWarningMessage(
-        "SAGE Studio did not respond within 60 seconds."
+        "SAGE Studio did not respond within 90 seconds."
       );
     }
   }, 1_000);
