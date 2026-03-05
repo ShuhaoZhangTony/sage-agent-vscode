@@ -120,12 +120,17 @@ export async function activate(
   const initiallyHealthy = await checkHealth();
   statusBar.setStudioStatus(initiallyHealthy);
 
-  if (!initiallyHealthy) {
+  if (initiallyHealthy) {
+    // Studio is already running (e.g. survived a VS Code reload)
+    vscode.window.showInformationMessage(
+      "SAGE Studio 已在运行 — 点击状态栏打开界面"
+    );
+  } else {
     const cfg = vscode.workspace.getConfiguration("sageAgent");
     const autoStart = cfg.get<boolean>("studio.autoStart", true);
     if (autoStart) {
       vscode.window.showInformationMessage(
-        "SAGE Studio not running — starting automatically…"
+        "SAGE Studio 未运行 — 正在自动启动…"
       );
       startStudio(statusBar);
     }
@@ -164,11 +169,13 @@ function startStudio(bar: StatusBarManager | null): void {
   const cfg = vscode.workspace.getConfiguration("sageAgent");
   const startCmd = cfg.get<string>("studio.startCommand", "sage studio start --yes");
 
-  // Run in a visible terminal — sage studio start is interactive and needs a TTY
+  // Run in a visible terminal — sage studio start is interactive and needs a TTY.
+  // Pre-activate conda env so `sage` is always on PATH regardless of shell profile.
   const terminal = vscode.window.createTerminal({
     name: "SAGE Studio",
     isTransient: true,
   });
+  terminal.sendText("conda activate sage");
   terminal.sendText(startCmd);
   terminal.show(true);
 
@@ -283,8 +290,8 @@ function showInstallGuide(extensionUri: vscode.Uri): void {
   <pre><code>pip install isage isage-studio</code></pre>
 
   <h2>2 · Start the studio backend</h2>
-  <pre><code>sage studio start</code></pre>
-  <p>Or use the <strong>SAGE Agent: Start Studio Backend</strong> command from the Command Palette.</p>
+  <pre><code>sage studio start --yes</code></pre>
+  <p>The <code>--yes</code> flag skips interactive prompts (recommended). Or use the <strong>SAGE Agent: Start Studio Backend</strong> command from the Command Palette.</p>
 
   <div class="tip">
     The backend listens on port <strong>8765</strong> by default.
@@ -303,7 +310,7 @@ function showInstallGuide(extensionUri: vscode.Uri): void {
   <ul>
     <li><strong>SAGE Agent: Open Chat</strong> — open the chat panel</li>
     <li><strong>SAGE Agent: Open Agent Task Panel</strong> — submit multi-step agent tasks</li>
-    <li><strong>SAGE Agent: Start Studio Backend</strong> — launch <code>sage studio start</code></li>
+    <li><strong>SAGE Agent: Start Studio Backend</strong> — launch <code>sage studio start --yes</code></li>
     <li><strong>SAGE Agent: Stop Studio Backend</strong> — stop the backend</li>
     <li><strong>SAGE Agent: Check Connection</strong> — probe <code>/health</code></li>
   </ul>

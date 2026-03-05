@@ -2,7 +2,7 @@
   "name": "sage-agent-vscode",
   "displayName": "SAGE Studio Agent",
   "description": "SAGE Studio Agent integration for VS Code — chat and multi-agent task execution via sage-studio backend",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "publisher": "intellistream",
   "license": "MIT",
   "icon": "media/icon.png",
